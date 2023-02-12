@@ -3,10 +3,11 @@ package controller
 import (
 	"GoDance/model"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"sync/atomic"
 	_ "sync/atomic"
+
+	"github.com/gin-gonic/gin"
 )
 
 var userIdSequence = int64(1)
