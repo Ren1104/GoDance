@@ -29,6 +29,7 @@ func Feed(c *gin.Context) {
 		currentTime = time.Now().Unix()
 	}
 
+	//FeedGet的参数二是userId,这里测试所以设置为0
 	feedList, nextTime, _ := service.FeedGet(currentTime, 0)
 
 	c.JSON(http.StatusOK, FeedResponse{
