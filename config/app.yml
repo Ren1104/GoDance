@@ -1,0 +1,2 @@
+mysql:
+  dns: root:password@tcp(127.0.0.1:3306)/goProject?charset=utf8&parseTime=True&loc=Local
