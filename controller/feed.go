@@ -17,6 +17,11 @@ type FeedResponse struct {
 	NextTime  int64          `json:"next_time,omitempty"`
 }
 
+type FeedNoVideoResponse struct {
+	common.Response
+	NextTime int64 `json:"next_time"`
+}
+
 // Feed same demo video list for every request
 func Feed(c *gin.Context) {
 
@@ -32,11 +37,32 @@ func Feed(c *gin.Context) {
 	//FeedGet的参数二是userId,这里测试所以设置为0
 	feedList, nextTime, _ := service.FeedGet(currentTime, 0)
 
+	//if feedList == nil {
+	//	c.JSON(http.StatusOK, FeedResponse{
+	//		Response:  common.Response{StatusCode: 1}, //失败
+	//		VideoList: feedList,
+	//		NextTime:  nextTime,
+	//	})
+	//}
+
 	c.JSON(http.StatusOK, FeedResponse{
 		Response:  common.Response{StatusCode: 0}, //成功
 		VideoList: feedList,
 		NextTime:  nextTime,
 	})
+
+	//if len(feedList) > 0 {
+	//	c.JSON(http.StatusOK, FeedResponse{
+	//		Response:  common.Response{StatusCode: 0}, //成功
+	//		VideoList: feedList,
+	//		NextTime:  nextTime,
+	//	})
+	//} else {
+	//	c.JSON(http.StatusOK, FeedNoVideoResponse{
+	//		Response: common.Response{StatusCode: 0}, //成功
+	//		NextTime: time.Now().Unix(),              //重新循环
+	//	})
+	//}
 }
 
 //demo

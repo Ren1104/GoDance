@@ -18,7 +18,7 @@ type Video struct {
 	Title         string `gorm:"column:title;"`
 }
 
-const videoNum = 1 //单次最多返回的视频数量
+const videoNum = 3 //单次最多返回的视频数量
 
 // FeedGet 获得视频列表
 func FeedGet(currentTime int64, userId int64) (feedVideoList []common.Video, nextTime int64, err error) {
@@ -26,10 +26,9 @@ func FeedGet(currentTime int64, userId int64) (feedVideoList []common.Video, nex
 	videoList = make([]Video, 0)
 	videoList, err = GetFeedVideoList(currentTime)
 	if err != nil {
-		//从头开始
 		println("获取视频列表出错")
 		println(err.Error())
-		//return nil, 0, err
+		return nil, 0, err
 	}
 
 	feedVideoList, nextTime = FeedResponseVideoList(videoList, userId)
