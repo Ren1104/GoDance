@@ -40,15 +40,15 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- ----------------------------
 
 DROP TABLE IF EXISTS `Videos`;
-CREATE TABLE `Videos` (
-	`id` int NOT NULL AUTO_INCREMENT, 
-  `author` int,
-  `play_url` varchar(255) NOT NULL,
-  `cover_url` varchar(255),
-  `favorite_count` int,
-  `comment_count` int,
-  `is_favorite` tinyint NOT NULL,
-  `title` varchar(255), 
-  `created` datetime,
-	PRIMARY KEY (`ID`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
+-- CREATE TABLE `Videos` (
+-- 	`id` int NOT NULL AUTO_INCREMENT, 
+--   `author` int,
+--   `play_url` varchar(255) NOT NULL,
+--   `cover_url` varchar(255),
+--   `favorite_count` int,
+--   `comment_count` int,
+--   `is_favorite` tinyint NOT NULL,
+--   `title` varchar(255), 
+--   `created` datetime,
+-- 	PRIMARY KEY (`ID`) USING BTREE
+-- ) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;

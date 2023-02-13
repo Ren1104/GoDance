@@ -22,4 +22,5 @@ func InitDB() {
 	if err != nil {
 		panic("Error to DB connection, err: " + err.Error())
 	}
+	db.AutoMigrate(&Video{})
 }

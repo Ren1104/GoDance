@@ -10,10 +10,20 @@ import (
 
 type VideoListResponse struct {
 	Response
-	VideoList []Video `json:"video_list"`
+	VideoList []PublishListVideoStruct `json:"video_list"`
 }
 
-
+//as just store author's id in database, need another struct to meet the interface of PublishList
+type PublishListVideoStruct struct {
+	Id            int64  `json:"id,omitempty"`
+	Author        model.User   `json:"author"`
+	PlayUrl       string `json:"play_url" json:"play_url,omitempty"`
+	CoverUrl      string `json:"cover_url,omitempty"`
+	FavoriteCount int64  `json:"favorite_count,omitempty"`
+	CommentCount  int64  `json:"comment_count,omitempty"`
+	IsFavorite    bool   `json:"is_favorite,omitempty"`
+}
+// !! Title didn't use !!
 // Publish check token then save upload file to public directory
 func Publish(c *gin.Context) {
 	if err != nil {
@@ -40,7 +50,7 @@ func Publish(c *gin.Context) {
 		})
 		return
 	}
-
+	fmt.Println(login_user.Id)
 	filename := filepath.Base(data.Filename)
 	finalName := fmt.Sprintf("%d_%s", login_user.Id, filename)
 	saveFile := filepath.Join("./public/", finalName)
@@ -52,7 +62,10 @@ func Publish(c *gin.Context) {
 		return
 	}
 	//title := c.PostForm("title")
-	db.Create(&Video{Author: login_user})
+	new_video := Video{
+		Author: login_user.Id,
+	}
+	db.Create(&new_video)
 	c.JSON(http.StatusOK, Response{
 		StatusCode: 0,
 		StatusMsg:  finalName + " uploaded successfully",
@@ -62,13 +75,42 @@ func Publish(c *gin.Context) {
 // PublishList all users have same publish video list
 func PublishList(c *gin.Context) {
 	VideoList := []Video{}
-	token := c.PostForm("token")
-	db.Find(&VideoList,"token=?", token)
+	
+	author_id := c.Query("user_id")
+	db.Find(&VideoList, "author=?", author_id)
+	
+	//search author row
+	var author model.User
+	var res = db.Find(&author, "id=?", author_id)
+	if res.Error != nil {
+		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "Author doesn't exist"})
+	 	return
+	}
+
+	PublishVideoList := []PublishListVideoStruct{} //[]PublishListVideoStruct{} //video list used for publish list interface
+	for i := 0; i < len(VideoList); i++ {
+		var tmp  = PublishListVideoStruct{
+			Id: VideoList[i].Id,
+			Author: author,
+			PlayUrl: VideoList[i].PlayUrl,
+			CoverUrl: VideoList[i].CoverUrl,
+			FavoriteCount: VideoList[i].FavoriteCount,
+			CommentCount: VideoList[i].CommentCount, 
+			IsFavorite: VideoList[i].IsFavorite,
+		}
+		// fmt.Println(tmp)
+		// fmt.Println("!!!")
+		PublishVideoList = append(PublishVideoList, tmp)	
+	}
+	// fmt.Print("Orginal:   ") 
+	// fmt.Println(VideoList)
+	// fmt.Print("After:   ") 
+	// fmt.Println(PublishVideoList)
 	c.JSON(http.StatusOK, VideoListResponse{
 		Response: Response{
 			StatusCode: 0,
 		},
-		VideoList: VideoList,
+		VideoList: PublishVideoList,
 	})
 	fmt.Printf("publish list\n")
 }
