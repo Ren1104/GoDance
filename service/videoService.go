@@ -8,7 +8,7 @@ import (
 // gorm.Model
 type Video struct {
 	//gorm.Model
-	Id            int64  `gorm:"column:video_id; primary_key;"`
+	Id            int64  `gorm:"column:id; primary_key;"`
 	AuthorId      int64  `gorm:"column:author_id;"`
 	PlayUrl       string `gorm:"column:play_url;"`
 	CoverUrl      string `gorm:"column:cover_url;"`
@@ -18,7 +18,7 @@ type Video struct {
 	Title         string `gorm:"column:title;"`
 }
 
-const videoNum = 3 //单次最多返回的视频数量
+const videoNum = 2 //单次最多返回的视频数量
 
 // FeedGet 获得视频列表
 func FeedGet(currentTime int64, userId int64) (feedVideoList []common.Video, nextTime int64, err error) {
