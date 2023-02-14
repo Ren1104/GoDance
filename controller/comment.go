@@ -35,7 +35,7 @@ func CommentAction(c *gin.Context) {
 	token := c.Query("token")
 	actionType := c.Query("action_type")
 	videoId, _ := strconv.Atoi(c.Query("video_id"))
-	if user, exist := usersLoginInfo[token]; exist {
+	if user, exist := FindUserByToken(token); exist { //改动了user的访问
 		var comment model.Comment
 		if actionType == "1" { //新增
 			comment.UserId = user.Id
@@ -43,21 +43,30 @@ func CommentAction(c *gin.Context) {
 			text := c.Query("comment_text")
 			comment.CommentText = text
 			comment.CreateDate = time.Now()
-			model.InsertComment(&comment)
+			if err := model.InsertComment(&comment); err != nil {
+				c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "评论失败"})
+			}
 			c.JSON(http.StatusOK, CommentActionResponse{Response: Response{StatusCode: 0, StatusMsg: "评论成功"},
 				Comment: Comment{
 					Id:         comment.Id,
 					User:       user,
 					Content:    text,
-					CreateDate: comment.CreateDate.Format("2006-01-02 15:04:05"),
+					CreateDate: comment.CreateDate.Format("01-02"),
 				}})
 			return
 		} else if actionType == "2" { //删除
 			commentId, _ := strconv.Atoi(c.Query("comment_id"))
-			comment = model.FindCommentById(int64(commentId))
+			comment, err := model.FindCommentById(int64(commentId)) //补充删除不存在的情况
+			if comment.Cancel == 1 || err != nil {
+				c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "评论已删除或不存在"})
+				return
+			}
 			if comment.UserId == user.Id { //是该评论主人
-				model.DeleteComment(int64(commentId))
-				c.JSON(http.StatusOK, Response{StatusCode: 0, StatusMsg: "评论删除成功"})
+				if err = model.DeleteComment(int64(commentId)); err != nil {
+					c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "评论删除失败"})
+				} else {
+					c.JSON(http.StatusOK, Response{StatusCode: 0, StatusMsg: "评论删除成功"})
+				}
 			} else { //不能删除他人评论
 				c.JSON(http.StatusForbidden, Response{StatusCode: 1, StatusMsg: "没有权限删除他人评论"})
 			}
@@ -81,12 +90,13 @@ func CommentAction(c *gin.Context) {
 func CommentList(c *gin.Context) {
 	token := c.Query("token")
 	videoId, _ := strconv.Atoi(c.Query("video_id"))
-	if user, exist := usersLoginInfo[token]; exist {
+	if user, exist := FindUserByToken(token); exist {
 		comments := model.FindCommentsByVideoId(int64(videoId))
 		var commentsVO = make([]Comment, len(comments))
 		for i := 0; i < len(comments); i++ {
 			comment := comments[i]
-			commentsVO[i] = Comment{comment.Id, user, comment.CommentText, comment.CreateDate.Format("2006-01-02 15:04:05")}
+			commentOwner := model.GetUserInfoVO(comment.UserId)
+			commentsVO[i] = Comment{comment.Id, commentOwner, comment.CommentText, comment.CreateDate.Format("2006-01-02 15:04:05")}
 		}
 		c.JSON(http.StatusOK, CommentListResponse{
 			Response:    Response{StatusCode: 0, StatusMsg: "获取评论列表成功"},
