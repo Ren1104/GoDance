@@ -1,13 +1,16 @@
 package controller
-
 import (
 	"fmt"
 	"GoDance/model"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"path/filepath"
+	ffmpeg "github.com/u2takey/ffmpeg-go"
+	"github.com/disintegration/imaging"
+	"bytes"
+	"os"
 )
-
+var ResourceDir = "http://127.0.0.1:8080/static/"
 type VideoListResponse struct {
 	Response
 	VideoList []PublishListVideoStruct `json:"video_list"`
@@ -23,6 +26,34 @@ type PublishListVideoStruct struct {
 	CommentCount  int64  `json:"comment_count,omitempty"`
 	IsFavorite    bool   `json:"is_favorite,omitempty"`
 }
+
+//convert video into cover using ffmpeg
+func Video2Cover(VideoName string) (CoverPath string, err error) {
+	VideoPath := filepath.Join("./public/videos", VideoName)
+	buf := bytes.NewBuffer(nil)
+	err = ffmpeg.Input(VideoPath).Filter("select", ffmpeg.Args{fmt.Sprintf("gte(n,1)")}).
+		Output("pipe:",ffmpeg.KwArgs{"vframes":1, "format":"image2", "vcodec":"mjpeg"}).
+		WithOutput(buf, os.Stdout).
+		Run()
+	if err != nil {
+		fmt.Printf("Generating cover error\n")
+		return "", err
+	}
+	cover, err := imaging.Decode(buf)
+	if err != nil {
+		fmt.Printf("Generating cover error\n")
+		return "", err
+	}
+	CoverPath = ".\\public\\covers\\" + VideoName + ".png"
+	//fmt.Println("CoverPath:  "+ CoverPath)
+	err = imaging.Save(cover, CoverPath)
+	if err != nil {
+		fmt.Printf("Saving cover error\n %s\n", err)
+		return "", err
+	}
+	return CoverPath, nil
+}
+
 // !! Title didn't use !!
 // Publish check token then save upload file to public directory
 func Publish(c *gin.Context) {
@@ -53,7 +84,7 @@ func Publish(c *gin.Context) {
 	fmt.Println(login_user.Id)
 	filename := filepath.Base(data.Filename)
 	finalName := fmt.Sprintf("%d_%s", login_user.Id, filename)
-	saveFile := filepath.Join("./public/", finalName)
+	saveFile := filepath.Join("./public/videos", finalName)
 	if err := c.SaveUploadedFile(data, saveFile); err != nil {
 		c.JSON(http.StatusOK, Response{
 			StatusCode: 1,
@@ -61,9 +92,23 @@ func Publish(c *gin.Context) {
 		})
 		return
 	}
+	
+	if err != nil {
+		c.JSON(http.StatusOK, Response{
+			StatusCode: 1,
+			StatusMsg:  err.Error(),
+		})
+		return
+	}
 	//title := c.PostForm("title")
+	VideoUrl := filepath.Join(ResourceDir, "videos", finalName)
+	CoverUrl, err := Video2Cover(finalName)
+	CoverUrl = filepath.Join(ResourceDir, "covers", finalName+".png")
+	//fmt.Printf("video: %s    cover: %s\n", VideoUrl, CoverUrl)
 	new_video := Video{
 		Author: login_user.Id,
+		PlayUrl: VideoUrl,
+		CoverUrl: CoverUrl,
 	}
 	db.Create(&new_video)
 	c.JSON(http.StatusOK, Response{
@@ -112,5 +157,5 @@ func PublishList(c *gin.Context) {
 		},
 		VideoList: PublishVideoList,
 	})
-	fmt.Printf("publish list\n")
+	//fmt.Printf("publish list\n")
 }

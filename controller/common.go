@@ -50,4 +50,3 @@ type MessagePushEvent struct {
 	MsgContent string `json:"msg_content,omitempty"`
 }
 
-//var ServerUrl = "http://192.168.1.8:8080"

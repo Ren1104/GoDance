@@ -3,6 +3,7 @@ package main
 import (
 	"GoDance/controller"
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
 func initRouter(r *gin.Engine) {
@@ -15,4 +16,6 @@ func initRouter(r *gin.Engine) {
 	//apiRouter.GET("/feed/", controller.Feed)
 	apiRouter.POST("/publish/action/", controller.Publish)
 	apiRouter.GET("/publish/list/", controller.PublishList)
+	apiRouter.StaticFS("/static", http.Dir("./public"))
+
 }
