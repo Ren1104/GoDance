@@ -1,7 +1,7 @@
 package main
 
 import (
-	"GoDance/controller"
+	"GoDance/model"
 	"github.com/gin-gonic/gin"
 )
 
@@ -10,7 +10,9 @@ func main() {
 
 	initRouter(r)
 
-	controller.InitDB()
+	model.InitDB()
+
+	model.InitTable()
 
 	r.Run()
 }

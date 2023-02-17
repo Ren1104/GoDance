@@ -1,4 +1,4 @@
-package controller
+package model
 
 import (
 	"fmt"
@@ -6,8 +6,8 @@ import (
 	"gorm.io/gorm"
 )
 
-var db *gorm.DB
-var err error
+var Db *gorm.DB
+var Err error
 
 func InitDB() {
 	host := "localhost"
@@ -17,8 +17,12 @@ func InitDB() {
 	password := "rac1104"
 	charset := "utf8"
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=%s&parseTime=true", username, password, host, port, database, charset)
-	db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
-	if err != nil {
-		panic("Error to DB connection, err: " + err.Error())
+	Db, Err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	if Err != nil {
+		panic("Error to DB connection, err: " + Err.Error())
 	}
+}
+
+func InitTable() {
+	Db.AutoMigrate(&CommentData{}, &UserData{}, &VideoData{}, &FavoriteData{})
 }
