@@ -10,11 +10,11 @@ var Db *gorm.DB
 var Err error
 
 func InitDB() {
-	host := "localhost"
+	host := "127.0.0.1"
 	port := "3306"
-	database := "godance"
-	username := "root"
-	password := "rac1104"
+	database := "douyin"
+	username := "test1"
+	password := "A123456,"
 	charset := "utf8"
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=%s&parseTime=true", username, password, host, port, database, charset)
 	Db, Err = gorm.Open(mysql.Open(dsn), &gorm.Config{})

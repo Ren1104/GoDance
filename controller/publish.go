@@ -14,12 +14,12 @@ import (
 	"strconv"
 	"time"
 )
-
-var ResourceDir = "http://192.168.2.9:8080/public/"
+//static resource dictionary of the server
+var ResourceDir = "http://192.168.115.80:8080/douyin/public/"
 
 // convert video into cover using ffmpeg
 func Video2Cover(VideoName string) (CoverPath string, err error) {
-	VideoPath := filepath.Join("E:\\GoDance\\public\\videos", VideoName)
+	VideoPath := filepath.Join(".\\public\\videos", VideoName)
 	buf := bytes.NewBuffer(nil)
 	err = ffmpeg.Input(VideoPath).Filter("select", ffmpeg.Args{fmt.Sprintf("gte(n,1)")}).
 		Output("pipe:", ffmpeg.KwArgs{"vframes": 1, "format": "image2", "vcodec": "mjpeg"}).
@@ -116,7 +116,6 @@ func PublishList(c *gin.Context) {
 
 	author_id := c.Query("user_id")
 	model.Db.Table("video_data").Find(&VideoList, "author=?", author_id)
-	fmt.Println(VideoList)
 	//search author row
 	authorid, _ := strconv.ParseInt(author_id, 10, 64)
 	author, err := service.FindUserById(authorid)
@@ -136,18 +135,13 @@ func PublishList(c *gin.Context) {
 			CommentCount:  VideoList[i].CommentCount,
 			IsFavorite:    VideoList[i].IsFavorite,
 		}
-		// fmt.Println("!!!")
 		PublishVideoList = append(PublishVideoList, tmp)
 	}
-	// fmt.Print("Orginal:   ")
-	// fmt.Println(VideoList)
-	// fmt.Print("After:   ")
-	// fmt.Println(PublishVideoList)
+
 	c.JSON(http.StatusOK, PublishVideoListResponse{
 		Response: Response{
 			StatusCode: 0,
 		},
 		PublishVideoList: PublishVideoList,
 	})
-	//fmt.Printf("publish list\n")
 }
