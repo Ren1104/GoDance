@@ -1,2 +1,2 @@
 mysql:
-  dns: root:wmfx1904@tcp(127.0.0.1:3306)/goProject?charset=utf8&parseTime=True&loc=Local
+  dns: root:123456@tcp(127.0.0.1:3306)/goProject?charset=utf8&parseTime=True&loc=Local
